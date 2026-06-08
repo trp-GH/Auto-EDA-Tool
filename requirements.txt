@@ -4,3 +4,4 @@ pygwalker
 prophet
 openpyxl
 matplotlib
+tornado
