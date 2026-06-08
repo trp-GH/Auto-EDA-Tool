@@ -1,31 +1,3 @@
-import os
-import sys
-import subprocess
-
-# ==========================================
-# ⚙️ AUTO-INSTALL & AUTO-RUN LOGIC
-# ==========================================
-# Check if the script is running for the first time or within Streamlit
-if os.environ.get("IS_STREAMLIT_RUNNING") != "true":
-    print("⏳ Checking and installing required libraries... Please wait. It may take a minute.")
-    
-    # 1. Automatically install required packages
-    required_packages = ["streamlit", "pandas", "pygwalker", "prophet", "openpyxl", "matplotlib"]
-    subprocess.check_call([sys.executable, "-m", "pip", "install"] + required_packages)
-    
-    print("✅ All libraries are installed successfully!")
-    print("🚀 Starting the DataSense Application in your browser...")
-    
-    # 2. Automatically run the Streamlit app
-    os.environ["IS_STREAMLIT_RUNNING"] = "true"  # Trick to prevent infinite loop
-    subprocess.check_call([sys.executable, "-m", "streamlit", "run", __file__])
-    
-    # Close the initial terminal process
-    sys.exit()
-
-# ==========================================
-# 📊 MAIN STREAMLIT APPLICATION CODE
-# ==========================================
 import streamlit as st
 import pandas as pd
 import pygwalker as pyg
@@ -111,6 +83,10 @@ if uploaded_file is not None:
                     except Exception as e:
                         st.error(f"⚠️ Error in Prediction: {e}")
                         st.info("Tip: Ensure that your Date column contains actual dates and Target column contains numerical values.")
+
+    # YAHAN ERROR THA: Ye naya block add kiya hai file read ko handle karne ke liye
+    except Exception as e:
+        st.error(f"⚠️ Error loading file: {e}")
 
 else:
     st.info("👆 Please upload a dataset to begin the analysis.")
