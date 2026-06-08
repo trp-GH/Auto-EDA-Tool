@@ -1,12 +1,17 @@
 import streamlit as st
 import pandas as pd
-import pygwalker as pyg
-import streamlit.components.v1 as components
+from pygwalker.api.streamlit import StreamlitRenderer
 from prophet import Prophet
 import matplotlib.pyplot as plt
 
 # Page Setup (Full width for better dashboard view)
 st.set_page_config(page_title="Advanced Auto-EDA & Predictor", layout="wide")
+
+# Sidebar for Portfolio Branding
+st.sidebar.title("DataSense")
+st.sidebar.markdown("Developed by **Tusar Ranjan Panda**")
+st.sidebar.markdown("---")
+st.sidebar.info("This tool performs automated Exploratory Data Analysis (EDA) and Time-Series Forecasting.")
 
 st.title("🚀 DataSense: Past Analytics & Future Prediction Platform")
 st.markdown("Upload your CSV/Excel file. Use **PyGWalker** for exploring the past, and **AI Forecasting** to predict the future.")
@@ -27,16 +32,24 @@ if uploaded_file is not None:
         # --- CREATE TABS FOR PAST & FUTURE ---
         tab1, tab2 = st.tabs(["📊 Past Analytics (PyGWalker)", "🔮 Future Predictions (AI)"])
         
+        # ==========================================
         # TAB 1: PAST ANALYTICS
+        # ==========================================
         with tab1:
             st.header("Interactive Drag & Drop Dashboard")
             st.write("Drag and drop variables onto the X and Y axes to create instant visualizations.")
             
-            # PyGWalker HTML component
-            pyg_html = pyg.walk(df, return_html=True)
-            components.html(pyg_html, height=800, scrolling=True)
+            # Optimized PyGWalker Renderer for Large Datasets
+            @st.cache_resource
+            def get_pyg_renderer(dataframe):
+                return StreamlitRenderer(dataframe, explorer_default=True)
+                
+            renderer = get_pyg_renderer(df)
+            renderer.explorer()
             
+        # ==========================================
         # TAB 2: FUTURE PREDICTIONS
+        # ==========================================
         with tab2:
             st.header("📈 Time-Series AI Forecasting")
             st.write("Select a Date column and a Target/Value column to forecast future trends.")
@@ -84,7 +97,6 @@ if uploaded_file is not None:
                         st.error(f"⚠️ Error in Prediction: {e}")
                         st.info("Tip: Ensure that your Date column contains actual dates and Target column contains numerical values.")
 
-    # YAHAN ERROR THA: Ye naya block add kiya hai file read ko handle karne ke liye
     except Exception as e:
         st.error(f"⚠️ Error loading file: {e}")
 
