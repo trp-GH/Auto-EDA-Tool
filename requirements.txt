@@ -1,0 +1,6 @@
+streamlit
+pandas
+pygwalker
+prophet
+openpyxl
+matplotlib
