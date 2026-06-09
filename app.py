@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Agg') # CRITICAL: Prevents GUI thread crashing on Linux/Streamlit Cloud servers
+matplotlib.use('Agg') # CRITICAL: Prevents GUI thread crashing on Linux/Streamlit Cloud environments
 
 import streamlit as st
 import pandas as pd
@@ -43,11 +43,32 @@ uploaded_file = st.file_uploader("📂 Select Source Dataset (Supported Formats:
 
 if uploaded_file is not None:
     try:
-        # Load Dataset cleanly
+        # Load Dataset cleanly with edge-case handling for Excel sheets
         if uploaded_file.name.endswith('.csv'):
             df = pd.read_csv(uploaded_file)
         else:
-            df = pd.read_excel(uploaded_file)
+            # Smart Excel Loader: Read the file first to check sheets
+            excel_file = pd.ExcelFile(uploaded_file)
+            
+            # If there are multiple sheets, try to find the one with data instead of blindly picking the first empty one
+            target_sheet = excel_file.sheet_names[0]
+            for sheet in excel_file.sheet_names:
+                test_df = pd.read_excel(uploaded_file, sheet_name=sheet)
+                if not test_df.empty and test_df.shape[1] > 1:
+                    target_sheet = sheet
+                    break
+            
+            # Load the selected valid sheet
+            df = pd.read_excel(uploaded_file, sheet_name=target_sheet)
+
+        # Remove completely empty rows and columns that skew matrix counts
+        df = df.dropna(how='all', axis=1)
+        df = df.dropna(how='all', axis=0)
+            
+        # Hard validation guardrail to ensure the dataframe actually holds information
+        if df.empty or df.shape[0] == 0 or df.shape[1] == 0:
+            st.error("⚠️ Ingestion Error: The uploaded file appears empty or contains no readable columns. Please check your file data layout.")
+            st.stop()
             
         st.success(f"✅ Data Engine Synchronized Successfully. (Records Matrix: {df.shape[0]} Rows | {df.shape[1]} Columns)")
         
