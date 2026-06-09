@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg') # CRITICAL: Prevents GUI thread crashing on Linux/Streamlit Cloud servers
+
 import streamlit as st
 import pandas as pd
 from pygwalker.api.streamlit import StreamlitRenderer
